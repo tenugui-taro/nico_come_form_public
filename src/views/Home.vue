@@ -1,18 +1,35 @@
 <template>
-  <div class="home">
-    <img alt="Vue logo" src="../assets/logo.png" />
-    <HelloWorld msg="Welcome to Your Vue.js + TypeScript App" />
-  </div>
+  <CommentForm @sendComment="sendComment" />
 </template>
 
 <script lang="ts">
-import Vue from "vue";
-import HelloWorld from "@/components/HelloWorld.vue"; // @ is an alias to /src
+import { defineComponent, ref } from "@vue/composition-api";
+import firebase from "@/configs/firebase";
+import CommentForm from "@/components/CommentForm.vue";
 
-export default Vue.extend({
+export default defineComponent({
   name: "Home",
   components: {
-    HelloWorld
+    CommentForm
+  },
+  setup() {
+    const timeNow = ref(Date.now());
+    const sendComment = comment => {
+      console.log("comment: ", comment);
+      firebase
+        .database()
+        .ref("comment")
+        .push({
+          id: comment.id,
+          color: comment.color,
+          text: comment.text,
+          timestamp: timeNow.value
+        });
+    };
+
+    return {
+      sendComment
+    };
   }
 });
 </script>
