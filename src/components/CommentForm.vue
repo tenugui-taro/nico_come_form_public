@@ -1,5 +1,5 @@
 <template>
-  <v-card outlined class="mt-8">
+  <v-card outlined>
     <v-container>
       <v-text-field
         outlined

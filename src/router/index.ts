@@ -3,6 +3,7 @@ import VueRouter, { RouteConfig } from "vue-router";
 import Login from "@/views/Login.vue";
 import Home from "@/views/Home.vue";
 import firebase from "@/configs/firebase";
+import { signIn } from "@/store/signIn";
 
 Vue.use(VueRouter);
 
@@ -38,6 +39,7 @@ router.beforeEach((to, from, next) => {
     firebase.auth().onAuthStateChanged(user => {
       if (user) {
         console.log("user: ", user);
+        signIn.value = true;
         next();
       } else {
         next({
