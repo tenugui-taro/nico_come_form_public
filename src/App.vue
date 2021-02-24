@@ -12,6 +12,9 @@
         <v-btn icon class="mx-4" @click="value = 1">
           <v-icon>mdi-comment-flash</v-icon>
         </v-btn>
+        <v-btn icon class="mx-4" @click="value = 2">
+          <v-icon>mdi-palette</v-icon>
+        </v-btn>
         <v-btn icon class="mx-4" @click="logout()">
           <v-icon>mdi-logout-variant</v-icon>
         </v-btn>
