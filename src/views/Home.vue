@@ -1,69 +1,77 @@
 <template>
   <div>
     <CommentForm @sendComment="sendComment" />
-    <CommentTable v-if="value == 0" :comments="comments" />
-    <CommentFlash v-if="value == 1" @sendFlashComment="sendComment" />
-    <Palette v-if="value == 2" />
+    <CommentTable v-if="selectedContent == 0" :comments="commentHistory" />
+    <FlashComments
+      v-if="selectedContent == 1"
+      @sendFlashComment="sendComment"
+    />
+    <Palette v-if="selectedContent == 2" />
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, ref } from "@vue/composition-api";
 import firebase from "@/configs/firebase";
+import "firebase/database";
 import CommentForm from "@/components/CommentForm.vue";
 import CommentTable from "@/components/CommentTable.vue";
-import CommentFlash from "@/components/CommentFlash.vue";
+import FlashComments from "@/components/FlashComments.vue";
 import Palette from "@/components/Palette.vue";
-import { value } from "@/store/value";
-import { color } from "@/store/color";
-import { rating } from "@/store/rating";
-
-interface CommentProps {
-  id: string;
-  color: string;
-  text: string;
-}
+import { selectedContent } from "@/store/selectedContent";
+import { commentLife } from "@/store/commentLife";
+import CommentModel from "@/model/CommentModel";
 
 export default defineComponent({
-  name: "Home",
   components: {
     CommentForm,
     CommentTable,
-    CommentFlash,
+    FlashComments,
     Palette
   },
   setup() {
-    const comments = ref<string[]>([]);
+    // ライフを１回復
+    const increaseCommentLife = () => {
+      commentLife.value++;
+    };
 
-    firebase
-      .database()
-      .ref("comment")
-      .on("child_added", function(snapshot, prevChildKey) {
-        const newPost = snapshot.val();
-        comments.value.unshift(newPost.text);
-      });
+    // コメント送信処理
+    const sendComment = (commentText: string) => {
+      if (commentLife.value < 0) return;
+      commentLife.value--;
 
-    const sendComment = (comment: CommentProps) => {
-      const timeNow = ref(Date.now());
-      console.log("comment: ", comment);
-      if (rating.value > 0) rating.value--;
+      const newComment = new CommentModel(commentText);
 
+      /* firebase データ登録処理 */
       firebase
         .database()
         .ref("comment")
         .push({
-          id: comment.id,
-          color: color.value,
-          text: comment.text,
-          timestamp: timeNow.value
+          id: newComment.id,
+          color: newComment.color,
+          text: newComment.text,
+          timestamp: newComment.timestamp
         });
+
+      setTimeout(increaseCommentLife, 10000 /*ms*/);
     };
+
+    // コメント履歴
+    const commentHistory = ref<string[]>([]);
+
+    /* firebase データ更新処理 */
+    firebase
+      .database()
+      .ref("comment")
+      .on("child_added", snapshot => {
+        const newPost = snapshot.val();
+        commentHistory.value.unshift(newPost.text);
+      });
 
     return {
       sendComment,
-      comments,
-      value,
-      color
+      commentHistory,
+      selectedContent
     };
   }
 });

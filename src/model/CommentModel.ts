@@ -1,11 +1,14 @@
+import { commentColor } from "@/store/commentColor";
 export default class CommentModel {
   id: string;
   color: string;
   text: string;
+  timestamp: number;
 
-  constructor(color: string, text: string) {
+  constructor(text: string) {
     this.id = `comment-${Math.random()}`;
-    this.color = color;
+    this.color = commentColor.value;
     this.text = text;
+    this.timestamp = Date.now();
   }
 }

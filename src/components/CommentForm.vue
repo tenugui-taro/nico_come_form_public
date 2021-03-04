@@ -7,11 +7,11 @@
             <v-rating
               color="red"
               background-color="grey"
-              empty-icon="mdi-heart-outline"
               full-icon="mdi-heart"
-              length="5"
+              empty-icon="mdi-heart-outline"
+              :length="MAX_COMMENT_LIFE"
+              :value="commentLife"
               readonly
-              :value="rating"
             />
           </div>
         </v-col>
@@ -20,10 +20,9 @@
         <v-col>
           <v-text-field
             outlined
-            v-model="comment"
+            v-model="commentText"
             label="コメントを入力する"
             required
-            :error="valid"
           />
         </v-col>
       </v-row>
@@ -33,7 +32,7 @@
           outlined
           rounded
           text
-          :disabled="rating == 0"
+          :disabled="commentText === '' || commentLife == 0"
           @click="sendComment"
           v-text="`投稿`"
         />
@@ -43,44 +42,29 @@
 </template>
 
 <script lang="ts">
-import {
-  defineComponent,
-  onUpdated,
-  reactive,
-  toRefs
-} from "@vue/composition-api";
-import CommentModel from "@/model/CommentModel";
-import { rating } from "@/store/rating";
+import { defineComponent, ref } from "@vue/composition-api";
+import { commentLife } from "@/store/commentLife";
+
+const MAX_COMMENT_LIFE = commentLife.value;
 
 export default defineComponent({
   setup(props, { emit }) {
-    const state = reactive({
-      valid: false,
-      comment: "",
-      color: "black",
-      timeNow: Date.now()
-    });
+    // コメント内容初期化
+    const commentText = ref("");
 
-    onUpdated(() => {
-      if (state.comment != "") return (state.valid = false);
-    });
-
-    const addRating = () => {
-      rating.value++;
-    };
-
+    // コメント内容を親コンポーネントに渡す
     const sendComment = () => {
-      if (state.comment == "") return (state.valid = true);
-      const comment = new CommentModel(state.color, state.comment);
-      emit("sendComment", comment);
-      state.comment = "";
-      setTimeout(addRating, 10000);
+      emit("sendComment", commentText.value);
+
+      // 入力内容を削除
+      commentText.value = "";
     };
 
     return {
-      ...toRefs(state),
-      sendComment,
-      rating
+      MAX_COMMENT_LIFE,
+      commentLife,
+      commentText,
+      sendComment
     };
   }
 });

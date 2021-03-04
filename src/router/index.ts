@@ -20,8 +20,7 @@ const routes: Array<RouteConfig> = [
     meta: { requiresAuth: true }
   },
   {
-    path: "*" /*[HACK] 404pageが適切 */,
-    name: "Home",
+    path: "*" /*[todo] notfound 404を用意 */,
     component: Home,
     meta: { requiresAuth: true }
   }
@@ -38,10 +37,10 @@ router.beforeEach((to, from, next) => {
   if (requiresAuth) {
     firebase.auth().onAuthStateChanged(user => {
       if (user) {
-        console.log("user: ", user);
         signIn.value = true;
         next();
       } else {
+        // サインインしていない -> ログインページへリダイレクト
         next({
           path: "/"
         });
